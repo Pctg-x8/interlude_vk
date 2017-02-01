@@ -9,11 +9,10 @@ use super::objects::*;
 use super::types::*;
 use std::os::raw::*;
 use libc::size_t;
-#[cfg(all(unix, not(test)))] use xcb;
 
 pub type PFN_vkVoidFunction = unsafe extern "system" fn();
 
-#[cfg(not(test))]
+#[cfg(not(feature = "noimpl"))]
 #[cfg_attr(all(unix, not(test)), link(name = "vulkan"))]
 #[cfg_attr(windows, link(name = "C:\\VulkanSDK\\1.0.17.0\\Bin\\vulkan-1"))]
 extern "system"
@@ -115,14 +114,6 @@ extern "system"
 	pub fn vkCmdBlitImage(commandBuffer: VkCommandBuffer, srcImage: VkImage, srcImageLayout: VkImageLayout, dstImage: VkImage, dstImageLayout: VkImageLayout, regionCount: u32, pRegions: *const VkImageBlit, filter: VkFilter);
 
 	// Surface Extension //
-	#[cfg(all(unix, not(feature = "container")))]
-	pub fn vkCreateXcbSurfaceKHR(instance: VkInstance, pCreateInfo: *const VkXcbSurfaceCreateInfoKHR, pAllocator: *const VkAllocationCallbacks, pSurface: *mut VkSurfaceKHR) -> VkResult;
-	#[cfg(windows)]
-	pub fn vkCreateWin32SurfaceKHR(instance: VkInstance, pCreateInfo: *const VkWin32SurfaceCreateInfoKHR, pAllocator: *const VkAllocationCallbacks, pSurface: *mut VkSurfaceKHR) -> VkResult;
-	#[cfg(all(unix, not(feature = "container")))]
-	pub fn vkGetPhysicalDeviceXcbPresentationSupportKHR(physicalDevice: VkPhysicalDevice, queueFamilyIndex: u32, con: *mut xcb::ffi::xcb_connection_t, window: xcb::ffi::xcb_window_t) -> VkBool32;
-	#[cfg(windows)]
-	pub fn vkGetPhysicalDeviceWin32PresentationSupportKHR(physicalDevice: VkPhysicalDevice, queueFamilyIndex: u32) -> VkBool32;
 	pub fn vkDestroySurfaceKHR(instance: VkInstance, surface: VkSurfaceKHR, pAllocator: *const VkAllocationCallbacks);
 	pub fn vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice: VkPhysicalDevice, queueFamilyIndex: u32, surface: VkSurfaceKHR, pSupported: *mut VkBool32) -> VkResult;
 	pub fn vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice: VkPhysicalDevice, surface: VkSurfaceKHR, pSurfaceCapabilities: *mut VkSurfaceCapabilitiesKHR) -> VkResult;
@@ -140,7 +131,7 @@ extern "system"
 }
 
 // Function stubs
-#[cfg(feature = "container")]
+#[cfg(feature = "noimpl")]
 mod stub
 {
 	#![allow(unused_variables, non_snake_case)]
@@ -264,7 +255,7 @@ mod stub
 	pub unsafe fn vkAcquireNextImageKHR(device: VkDevice, swapchain: VkSwapchainKHR, timeout: u64, semaphore: VkSemaphore, fence: VkFence, pImageIndex: *mut u32) -> VkResult { unimplemented!(); }
 	pub unsafe fn vkQueuePresentKHR(queue: VkQueue, pPresentInfo: *const VkPresentInfoKHR) -> VkResult { unimplemented!(); }
 }
-#[cfg(feature = "container")] pub use self::stub::*;
+#[cfg(feature = "no-wsi")] pub use self::stub::*;
 
 // Function Pointers
 pub type PFN_vkAllocationFunction = unsafe extern "system" fn(pUserData: *mut c_void, size: size_t, alignment: size_t, allocationScope: VkSystemAllocationScope) -> *mut c_void;

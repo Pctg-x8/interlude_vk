@@ -6,7 +6,6 @@ use std;
 use std::ffi::*;
 use std::ops::Deref;
 use std::rc::Rc;
-#[cfg(all(unix, not(test)))] use xcb::ffi::*;
 use libc::size_t;
 use std::borrow::Cow;
 
@@ -167,33 +166,25 @@ impl PhysicalDevice
 	}
 
 	// Surface //
-	#[cfg(all(unix, not(feature = "container")))] pub fn is_platform_presentation_support(&self, qf_index: u32, con: *mut xcb_connection_t, vis: xcb_visualid_t) -> bool
-	{
-		unsafe { vkGetPhysicalDeviceXcbPresentationSupportKHR(self.0, qf_index, con, vis) == 1 }
-	}
-	#[cfg(windows)] pub fn is_platform_presentation_support(&self, qf_index: u32) -> bool
-	{
-		unsafe { vkGetPhysicalDeviceWin32PresentationSupportKHR(self.0, qf_index) == 1 }
-	}
-	pub fn is_surface_support(&self, qf_index: u32, surface: &Surface) -> bool
+	pub fn is_surface_support(&self, qf_index: u32, surface: &VkSurfaceKHR) -> bool
 	{
 		let mut supported = false as VkBool32;
-		unsafe { vkGetPhysicalDeviceSurfaceSupportKHR(self.0, qf_index, surface.0, &mut supported) };
+		unsafe { vkGetPhysicalDeviceSurfaceSupportKHR(self.0, qf_index, *surface, &mut supported) };
 		supported == true as VkBool32
 	}
-	pub fn surface_caps(&self, surface: &Surface) -> VkSurfaceCapabilitiesKHR
+	pub fn surface_caps(&self, surface: &VkSurfaceKHR) -> VkSurfaceCapabilitiesKHR
 	{
 		let mut caps = unsafe { std::mem::uninitialized() };
-		unsafe { vkGetPhysicalDeviceSurfaceCapabilitiesKHR(self.0, surface.0, &mut caps) };
+		unsafe { vkGetPhysicalDeviceSurfaceCapabilitiesKHR(self.0, *surface, &mut caps) };
 		caps
 	}
-	pub fn surface_formats(&self, surface: &Surface) -> VkWrapResult<Vec<VkSurfaceFormatKHR>>
+	pub fn surface_formats(&self, surface: &VkSurfaceKHR) -> VkWrapResult<Vec<VkSurfaceFormatKHR>>
 	{
-		DeviceDataEnumerator!(self.0, surface.0 => vkGetPhysicalDeviceSurfaceFormatsKHR)
+		DeviceDataEnumerator!(self.0, *surface => vkGetPhysicalDeviceSurfaceFormatsKHR)
 	}
-	pub fn present_modes(&self, surface: &Surface) -> VkWrapResult<Vec<VkPresentModeKHR>>
+	pub fn present_modes(&self, surface: &VkSurfaceKHR) -> VkWrapResult<Vec<VkPresentModeKHR>>
 	{
-		DeviceDataEnumerator!(self.0, surface.0 => vkGetPhysicalDeviceSurfacePresentModesKHR)
+		DeviceDataEnumerator!(self.0, *surface => vkGetPhysicalDeviceSurfacePresentModesKHR)
 	}
 }
 
@@ -478,28 +469,11 @@ DeviceChildDefaultNewMethod!(Sampler: VkSamplerCreateInfo > vkCreateSampler);
 
 // --- WindowSystemIntegration Extensions --- ///
 
-pub struct Surface(VkSurfaceKHR, Rc<Instance>);
-impl Drop for Surface { fn drop(&mut self) { unsafe { vkDestroySurfaceKHR(**self.parent(), **self, std::ptr::null()) }; } }
-impl Deref for Surface { type Target = VkSurfaceKHR; fn deref(&self) -> &VkSurfaceKHR { &self.0 } }
-impl HasParent for Surface { type Parent = Instance; fn parent(&self) -> &Instance { &self.1 } }
-impl Surface
-{
-	#[cfg(all(unix, not(test)))] pub fn new(instance: &Rc<Instance>, info: &VkXcbSurfaceCreateInfoKHR) -> VkWrapResult<Self>
-	{
-		let mut surf = empty_handle();
-		unsafe { vkCreateXcbSurfaceKHR(***instance, info, std::ptr::null(), &mut surf) }.map(|| Surface(surf, instance.clone()))
-	}
-	#[cfg(windows)] pub fn new(instance: &Rc<Instance>, info: &VkWin32SurfaceCreateInfoKHR) -> VkWrapResult<Self>
-	{
-		let mut surf = empty_handle();
-		unsafe { vkCreateWin32SurfaceKHR(***instance, info, std::ptr::null(), &mut surf) }.map(|| Surface(surf, instance.clone()))
-	}
-}
-pub struct Swapchain(VkSwapchainKHR, Rc<Surface>, Rc<Device>);
-impl Drop for Swapchain { fn drop(&mut self) { unsafe { vkDestroySwapchainKHR(**self.parent(), **self, std::ptr::null()) }; } }
-impl Deref for Swapchain { type Target = VkSwapchainKHR; fn deref(&self) -> &VkSwapchainKHR { &self.0 } }
-impl HasParent for Swapchain { type Parent = Device; fn parent(&self) -> &Device { &self.2 } }
-impl Swapchain
+pub struct Swapchain<Surface>(VkSwapchainKHR, Rc<Surface>, Rc<Device>);
+impl<Surface> Drop for Swapchain<Surface> { fn drop(&mut self) { unsafe { vkDestroySwapchainKHR(**self.parent(), **self, std::ptr::null()) }; } }
+impl<Surface> Deref for Swapchain<Surface> { type Target = VkSwapchainKHR; fn deref(&self) -> &VkSwapchainKHR { &self.0 } }
+impl<Surface> HasParent for Swapchain<Surface> { type Parent = Device; fn parent(&self) -> &Device { &self.2 } }
+impl<Surface> Swapchain<Surface>
 {
 	pub fn new(device: &Rc<Device>, surface: &Rc<Surface>, info: &VkSwapchainCreateInfoKHR) -> VkWrapResult<Self>
 	{

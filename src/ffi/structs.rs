@@ -7,8 +7,6 @@
 use std::os::raw::*;
 use libc::size_t;
 use super::*;
-#[cfg(windows)] use winapi;
-#[cfg(all(unix, not(feature = "container")))] use xcb;
 
 // Basic Types(Copyable) //
 #[repr(C)] #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)] pub struct VkOffset2D(pub i32, pub i32);
@@ -634,18 +632,6 @@ impl VkComponentMapping
 #[repr(C)] pub struct VkDrawIndexedIndirectCommand(pub u32, pub u32, pub u32, pub i32, pub u32);	// idxcount, icount, firstIdx, voffs, firstI
 
 // Surface/Swapchain Extensions //
-#[repr(C)] #[cfg(windows)]
-pub struct VkWin32SurfaceCreateInfoKHR
-{
-	pub sType: VkStructureType, pub pNext: *const c_void, pub flags: VkWin32SurfaceCreateFlagsKHR,
-	pub hinstance: winapi::HINSTANCE, pub hwnd: winapi::HWND
-}
-#[repr(C)] #[cfg(all(unix, not(feature = "container")))]
-pub struct VkXcbSurfaceCreateInfoKHR
-{
-	pub sType: VkStructureType, pub pNext: *const c_void, pub flags: VkXcbSurfaceCreateFlagsKHR,
-	pub connection: *mut xcb::ffi::xcb_connection_t, pub window: xcb::ffi::xcb_window_t
-}
 #[repr(C)]
 pub struct VkSurfaceCapabilitiesKHR
 {
