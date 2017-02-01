@@ -151,6 +151,7 @@ impl DebugReportCallback
 	}
 }
 pub struct PhysicalDevice(VkPhysicalDevice, Rc<Instance>);
+impl Deref for PhysicalDevice { type Target = VkPhysicalDevice; fn deref(&self) -> &VkPhysicalDevice { &self.0 } }
 impl HasParent for PhysicalDevice { type Parent = Instance; fn parent(&self) -> &Instance { &self.1 } }
 impl PhysicalDevice
 {
