@@ -6,7 +6,7 @@
 use super::*;
 use libc::*;
 
-#[cfg_attr(all(unix, not(test)), link(name = "vulkan"))]
+#[cfg_attr(unix, link(name = "vulkan"))]
 #[cfg_attr(windows, link(name = "C:\\VulkanSDK\\1.0.17.0\\Bin\\vulkan-1"))]
 extern "system"
 {
