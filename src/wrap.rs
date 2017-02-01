@@ -1,6 +1,6 @@
 // Objective Vulkan Wrapping
 
-use super::ffi::*;
+use super::*;
 use super::traits::*;
 use std;
 use std::ffi::*;

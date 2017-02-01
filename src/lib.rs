@@ -1,10 +1,12 @@
 
 extern crate libc;
+extern crate interlude_vkdefs;
 
-#[macro_use] pub mod ffi;
+pub use interlude_vkdefs::*;
+
 pub mod traits;
-mod defaults;
 mod wrap;
-mod iex;
+mod functions;
 
+pub use functions::*;
 pub use wrap::*;

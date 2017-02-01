@@ -1,7 +1,7 @@
 use std;
-use super::ffi::*;
+use super::*;
 
-pub trait ResultValueToObject where Self: std::marker::Sized
+pub trait ResultValueToObject : std::marker::Sized
 {
 	fn to_result(self) -> Result<(), Self>;
 	fn and_then<F, T>(self, f: F) -> Result<T, Self> where F: FnOnce() -> Result<T, Self>;

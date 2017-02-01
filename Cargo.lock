@@ -2,6 +2,15 @@
 name = "interlude-vk"
 version = "0.1.0"
 dependencies = [
+ "interlude-vkdefs 0.1.0 (git+https://github.com/Pctg-x8/interlude_vkdefs)",
+ "libc 0.2.20 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "interlude-vkdefs"
+version = "0.1.0"
+source = "git+https://github.com/Pctg-x8/interlude_vkdefs#516375c280bfa0fc02362a8de75366710edfd6a6"
+dependencies = [
  "libc 0.2.20 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -11,4 +20,5 @@ version = "0.2.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [metadata]
+"checksum interlude-vkdefs 0.1.0 (git+https://github.com/Pctg-x8/interlude_vkdefs)" = "<none>"
 "checksum libc 0.2.20 (registry+https://github.com/rust-lang/crates.io-index)" = "684f330624d8c3784fb9558ca46c4ce488073a8d22450415c5eb4f4cfb0d11b5"
