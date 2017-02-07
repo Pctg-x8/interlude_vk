@@ -81,7 +81,7 @@ impl Instance
 		let (app_name_c, engine_name_c) = (c_str(app_name), c_str(engine_name));
 		let layers_c = layers.into_iter().map(|&s| CString::new(s).unwrap()).collect::<Vec<_>>();
 		let extensions_c = extensions.into_iter().map(|&s| CString::new(s).unwrap()).collect::<Vec<_>>();
-		let layers_ptr_c = layers.iter().map(|x| x.as_ptr() as *const i8).collect::<Vec<_>>();
+		let layers_ptr_c = layers_c.iter().map(|x| x.as_ptr()).collect::<Vec<_>>();
 		let extensions_ptr_c = extensions_c.iter().map(|x| x.as_ptr()).collect::<Vec<_>>();
 		let app = VkApplicationInfo
 		{
